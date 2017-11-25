@@ -287,7 +287,33 @@ class cnn(object):
                 stationnum = sess.run(tf.argmax(result,1))
                 print('station {0} ,\n station number is {1}'.format(result,stationnum))
 
-                
+    def stepidentification(self,n_class,size_image,img):
+        
+        if not os.path.exists("save_files"):
+            print('Please train')
+        else:
+            sess = tf.InteractiveSession()
+            image = [np.array(Image.open(img).convert("RGB").resize((size_image, size_image)))]
+            #image = tf.cast(image,tf.float32)
+            #image = tf.reshape(image,tf.stack([1,size_image,size_image,3]))
+            #print(image)
+
+            x=tf.placeholder(tf.float32,shape=[None,size_image,size_image,3])
+            keep_prob=tf.placeholder(tf.float32)
+            y_conv=self.model(x,n_class,keep_prob)
+            
+            y_=tf.nn.softmax(y_conv)
+
+            saver = tf.train.Saver()
+            with tf.Session() as sess:
+                sess.run(tf.global_variables_initializer())
+
+                for i in range(200):
+                    saver.restore(sess,"save_files/model.ckpt-"+str((i+1)*100))
+                    result = np.round(sess.run(y_,feed_dict={x: image,keep_prob: 1.0}),3)
+                    stationnum = sess.run(tf.argmax(result,1))
+                    print('step {0} {1} ,\n station number is {2}'.format(((i+1)*100),result,stationnum))
+            
 
     def listidentification(self,n_class,size_image,dir):
         if not os.path.exists("save_files"):
