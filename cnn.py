@@ -322,6 +322,8 @@ class cnn(object):
             if not os.path.exists(dir):
                 print('No directry')
             else:
+                label=[np.array((int)(dir[0]))]
+
                 imglist=os.listdir(dir)
                 x=tf.placeholder(tf.float32,shape=[None,size_image,size_image,3])
                 keep_prob=tf.placeholder(tf.float32)
@@ -341,5 +343,5 @@ class cnn(object):
                         result = np.round(sess.run(y_,feed_dict={x: image,keep_prob: 1.0}),3)
                         stationnum = sess.run(tf.argmax(result,1))
                         print('station {0} ,\n station number is {1}'.format(result,stationnum))
-
+                        print('result {0}'.format(sess.run(tf.equal(label,stationnum))))
     
