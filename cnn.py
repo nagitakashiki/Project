@@ -285,7 +285,7 @@ class cnn(object):
                 saver.restore(sess,"save_files/model.ckpt-20000")
                 result = np.round(sess.run(y_,feed_dict={x: image,keep_prob: 1.0}),3)
                 stationnum = sess.run(tf.argmax(result,1))
-                print('step {0} ,\n station number is {1}'.format(result,stationnum))
+                print('station {0} ,\n station number is {1}'.format(result,stationnum))
 
                 
 
@@ -314,6 +314,6 @@ class cnn(object):
 
                         result = np.round(sess.run(y_,feed_dict={x: image,keep_prob: 1.0}),3)
                         stationnum = sess.run(tf.argmax(result,1))
-                        print('step {0} ,\n station number is {1}'.format(result,stationnum))
+                        print('station {0} ,\n station number is {1}'.format(result,stationnum))
 
     
