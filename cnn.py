@@ -42,9 +42,6 @@ $python3
   cnn.py
 """
 
-
-
-
 class cnn(object):
 
     #tfrecordsファイルから画像データと対応するラベルを取得する
@@ -286,12 +283,37 @@ class cnn(object):
 
                 #for i in range(200):
                 saver.restore(sess,"save_files/model.ckpt-20000")
-                result = sess.run(y_,feed_dict={x: image,keep_prob: 1.0})
-                stationnum = np.round(sess.run(tf.argmax(result,1)))
+                result = np.round(sess.run(y_,feed_dict={x: image,keep_prob: 1.0}),3)
+                stationnum = sess.run(tf.argmax(result,1))
                 print('step {0} ,\n station number is {1}'.format(result,stationnum))
 
-                return stationnum
+                
 
-    
+    def listidentification(self,n_class,size_image,dir):
+        if not os.path.exists("save_files"):
+            print('Please train')
+        else:
+            if not os.path.exists(dir):
+                print('No directry')
+            else:
+                imglist=os.listdir(dir)
+                x=tf.placeholder(tf.float32,shape=[None,size_image,size_image,3])
+                keep_prob=tf.placeholder(tf.float32)
+                y_conv=self.model(x,n_class,keep_prob)
+            
+                y_=tf.nn.softmax(y_conv)
+
+                saver = tf.train.Saver()
+                with tf.Session() as sess:
+                    sess.run(tf.global_variables_initializer())
+                    saver.restore(sess,"save_files/model.ckpt-20000")
+
+                    for img in imglist:
+
+                        image = [np.array(Image.open(dir+"/"+img).convert("RGB").resize((size_image, size_image)))]
+
+                        result = np.round(sess.run(y_,feed_dict={x: image,keep_prob: 1.0}),3)
+                        stationnum = sess.run(tf.argmax(result,1))
+                        print('step {0} ,\n station number is {1}'.format(result,stationnum))
 
     
