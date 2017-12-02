@@ -267,10 +267,7 @@ class cnn(object):
         else:
             sess = tf.InteractiveSession()
             image = [np.array(Image.open(img).convert("RGB").resize((size_image, size_image)))]
-            #image = tf.cast(image,tf.float32)
-            #image = tf.reshape(image,tf.stack([1,size_image,size_image,3]))
-            #print(image)
-
+            
             x=tf.placeholder(tf.float32,shape=[None,size_image,size_image,3])
             keep_prob=tf.placeholder(tf.float32)
             y_conv=self.model(x,n_class,keep_prob)
