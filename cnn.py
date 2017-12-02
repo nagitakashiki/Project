@@ -281,7 +281,7 @@ class cnn(object):
             with tf.Session() as sess:
                 sess.run(tf.global_variables_initializer())
 
-                #for i in range(200):
+                
                 saver.restore(sess,"save_files/model.ckpt-20000")
                 result = np.round(sess.run(y_,feed_dict={x: image,keep_prob: 1.0}),3)
                 stationnum = sess.run(tf.argmax(result,1))
@@ -294,9 +294,6 @@ class cnn(object):
         else:
             sess = tf.InteractiveSession()
             image = [np.array(Image.open(img).convert("RGB").resize((size_image, size_image)))]
-            #image = tf.cast(image,tf.float32)
-            #image = tf.reshape(image,tf.stack([1,size_image,size_image,3]))
-            #print(image)
 
             x=tf.placeholder(tf.float32,shape=[None,size_image,size_image,3])
             keep_prob=tf.placeholder(tf.float32)
