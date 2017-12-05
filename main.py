@@ -45,6 +45,38 @@ $python3
   main.py
 """
 
+"""
+実行例2(実際に画像を与えて結果を返す関数の使い方)
+
+前提
+トレーニングを20000回行い、ディレクトリ構造が
+~/save_files
+　main.py
+となっていることを前提とします。
+
+(1)identification
+画像を一枚投げて結果を返す関数
+$python3
+>>>import main
+>>>m = main.main()
+>>>m.identification(n_class=クラス数,size_image=画像サイズ,model='cnn1',img=与える画像)
+(2)stepidentification
+100ステップ毎の学習データを用いて画像を一枚投げて結果を返す関数
+$python3
+>>>import main
+>>>m = main.main()
+>>>m.stepidentification(n_class=クラス数,size_image=画像サイズ,model='cnn1',img=与える画像)
+(3)listidentification
+あるディレクトリ内に保存されている画像すべてを投げて結果を返す関数
+これに限りディレクトリ名に使われている数字をラベルとして用いた、正誤判定を行っているため、与えるディレクトリは
+0梅郷駅西口/(省略)
+1梅郷駅東口/(省略)
+みたいな名前になっていることが前提
+$python3
+>>>import main
+>>>m = main.main()
+>>>m.listidentification(n_class=クラス数,size_image=画像サイズ,model='cnn1',dir=与えるディレクトリ)
+"""
 class main(object):
 
     #tfrecordsファイルから画像データと対応するラベルを取得する
@@ -309,6 +341,8 @@ class main(object):
                     x: batch[0], y_: batch[1], keep_prob: 1.0})))
             coord.request_stop()
             coord.join(threads)
+
+    #ディレクトリのラベルの判別用
     def pull_num(self,str):
         i=1
         for i in range(len(str)):
@@ -320,7 +354,7 @@ class main(object):
         return int(str)
 
 
-
+    #画像を一枚与えたときの結果を返す
     def identification(self,n_class,size_image,model,img):
         
         if not os.path.exists("save_files"):
@@ -346,7 +380,7 @@ class main(object):
                 print('station {0} ,\n station number is {1}'.format(result,stationnum))
             
 
-
+    #一枚与えられた画像に対し100ステップごとの学習結果を適用した結果を返す
     def stepidentification(self,n_class,size_image,model,img):
         
         if not os.path.exists("save_files"):
@@ -371,7 +405,7 @@ class main(object):
                     stationnum = sess.run(tf.argmax(result,1))
                     print('step {0} {1} ,\n station number is {2}'.format(((i+1)*100),result,stationnum))
                 
-
+    #ディレクトリ内の写真すべてをなげて結果を返す
     def listidentification(self,n_class,size_image,model,dir):
         if not os.path.exists("save_files"):
             print('Please train')

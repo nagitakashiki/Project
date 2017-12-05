@@ -260,6 +260,16 @@ class cnn(object):
             coord.request_stop()
             coord.join(threads)
 
+    def pull_num(str):
+        i=1
+        for i in range(len(str)):
+            try:
+                int(str[i])
+            except ValueError:
+                return(int(str[0:i]))
+            i+=1
+        return int(str)
+
     def identification(self,n_class,size_image,img):
         
         if not os.path.exists("save_files"):
@@ -316,7 +326,7 @@ class cnn(object):
             if not os.path.exists(dir):
                 print('No directry')
             else:
-                label=[np.array((int)(dir[0]))]
+                label=[np.array(pull_num(dir))]
 
                 imglist=os.listdir(dir)
                 x=tf.placeholder(tf.float32,shape=[None,size_image,size_image,3])
