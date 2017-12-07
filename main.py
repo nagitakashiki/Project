@@ -446,7 +446,7 @@ class main(object):
                         print('result {0}'.format(sess.run(tf.equal(label,snum))))
                     print(sess.run(tf.reduce_mean(tf.cast(tf.equal(labels,stationnum),tf.float32))))
 
-
+    #複数のディレクトリ対応
     def liststepidentification(self,n_class,size_image,model,dir,labels,epoch):
         
         if not os.path.exists("save_files"):
@@ -474,8 +474,8 @@ class main(object):
                 sess.run(tf.global_variables_initializer())
 
                 for i in range(epoch//100):
-                    saver.restore(sess,"save_files/model.ckpt-"+str(200*100))
-                    print('step'+str(200*100))
+                    saver.restore(sess,"save_files/model.ckpt-"+str((i+1)*100))
+                    print('step'+str((i+1)*100))
         
                     correctans=0
                     for sdir,slabel,name in zip(childlist,testlabel,dirlist):
