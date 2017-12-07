@@ -52,6 +52,8 @@ $python3
 トレーニングを20000回行い、ディレクトリ構造が
 ~/save_files
 　main.py
+ 0梅郷駅西口/(省略)
+ 1梅郷駅東口/(省略)
 となっていることを前提とします。
 
 (1)identification
@@ -174,6 +176,7 @@ class main(object):
         #ドロップアウト層
         fc1_drop = tf.nn.dropout(fc1, keep_prob)
         #全結合層2
+        
         with tf.variable_scope("fc2") as scope:
             weights = tf.get_variable("weight", shape=[1024, n_class], initializer=tf.truncated_normal_initializer(stddev=0.01))
             biases = tf.get_variable("biases", shape=[n_class], initializer=tf.constant_initializer(0.0))
@@ -413,9 +416,11 @@ class main(object):
             if not os.path.exists(dir):
                 print('No directry')
             else:
-                label=[np.array(self.pull_num(dir))]
 
                 imglist=os.listdir(dir)
+                label=np.array(self.pull_num(dir))
+                labels=[label]*(len(imglist))
+                
                 x=tf.placeholder(tf.float32,shape=[None,size_image,size_image,3])
                 keep_prob=tf.placeholder(tf.float32)
                 y_conv=self.model(x,n_class,keep_prob,model)
@@ -427,11 +432,62 @@ class main(object):
                     sess.run(tf.global_variables_initializer())
                     saver.restore(sess,"save_files/model.ckpt-20000")
 
-                    for img in imglist:
+                    colorlist=[np.array(Image.open(dir+"/"+img).convert("RGB").resize((size_image, size_image))) for img in imglist]
 
-                        image = [np.array(Image.open(dir+"/"+img).convert("RGB").resize((size_image, size_image)))]
+                    #for img in imglist:
+                     #   image = np.array(Image.open(dir+"/"+img).convert("RGB").resize((size_image, size_image)))
+                      #  colorlist.append(image)
 
-                        result = np.round(sess.run(y_,feed_dict={x: image,keep_prob: 1.0}),3)
+                    result = np.round(sess.run(y_,feed_dict={x: colorlist,keep_prob: 1.0}),3)
+                    stationnum = sess.run(tf.argmax(result,1))
+
+                    for re,snum in zip(result,stationnum):
+                        print('station {0} ,\n station number is {1}'.format(re,snum))
+                        print('result {0}'.format(sess.run(tf.equal(label,snum))))
+                    print(sess.run(tf.reduce_mean(tf.cast(tf.equal(labels,stationnum),tf.float32))))
+
+
+    def liststepidentification(self,n_class,size_image,model,dir,labels,epoch):
+        
+        if not os.path.exists("save_files"):
+            print('Please train')
+        else:
+            sess = tf.InteractiveSession()
+
+            dirlist = os.listdir(dir)
+            denominbator=0
+            childlist = []
+            for i in dirlist:
+                samplelist=os.listdir(dir+'/'+i)
+                childlist.append(list(map(lambda x:i+'/'+x ,samplelist)))
+                denominbator=denominbator+len(samplelist)
+            testlabel = [[labels[i]]*len(childlist[i]) for i in range(len(dirlist))]
+
+            x=tf.placeholder(tf.float32,shape=[None,size_image,size_image,3])
+            keep_prob=tf.placeholder(tf.float32)
+            y_conv=self.model(x,n_class,keep_prob,model)
+            
+            y_=tf.nn.softmax(y_conv)
+
+            saver = tf.train.Saver()
+            with tf.Session() as sess:
+                sess.run(tf.global_variables_initializer())
+
+                for i in range(epoch//100):
+                    saver.restore(sess,"save_files/model.ckpt-"+str(200*100))
+                    print('step'+str(200*100))
+        
+                    correctans=0
+                    for sdir,slabel,name in zip(childlist,testlabel,dirlist):
+                        colorlist=[np.array(Image.open(dir+"/"+img).convert("RGB").resize((size_image, size_image))) for img in sdir]
+
+                        result = np.round(sess.run(y_,feed_dict={x: colorlist,keep_prob: 1.0}),3)
                         stationnum = sess.run(tf.argmax(result,1))
-                        print('station {0} ,\n station number is {1}'.format(result,stationnum))
-                        print('result {0}'.format(sess.run(tf.equal(label,stationnum))))
+                        childans=tf.cast(tf.equal(stationnum,slabel),tf.float32)
+                        correctans=correctans+tf.reduce_sum(childans)
+                    
+                        print('{0} accurancy: {1}'.format(name,sess.run(
+                            tf.reduce_mean(childans))))
+                
+                
+                    print('All accurancy: {0}'.format(sess.run(correctans/denominbator)))
