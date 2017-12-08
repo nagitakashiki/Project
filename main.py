@@ -446,7 +446,7 @@ class main(object):
                         print('result {0}'.format(sess.run(tf.equal(label,snum))))
                     print(sess.run(tf.reduce_mean(tf.cast(tf.equal(labels,stationnum),tf.float32))))
 
-    #複数のディレクトリ対応
+
     def liststepidentification(self,n_class,size_image,model,dir,labels,epoch):
         
         if not os.path.exists("save_files"):
@@ -461,7 +461,10 @@ class main(object):
                 samplelist=os.listdir(dir+'/'+i)
                 childlist.append(list(map(lambda x:i+'/'+x ,samplelist)))
                 denominbator=denominbator+len(samplelist)
-            testlabel = [[labels[i]]*len(childlist[i]) for i in range(len(dirlist))]
+            #testlabel = [[labels[i]]*len(childlist[i]) for i in range(len(dirlist))]
+            testlabel = [[[j]*len(childlist[i])for j in labels[i]] for i in range(len(dirlist))]
+            print(testlabel)
+            #print(testlabel)
 
             x=tf.placeholder(tf.float32,shape=[None,size_image,size_image,3])
             keep_prob=tf.placeholder(tf.float32)
@@ -483,11 +486,15 @@ class main(object):
 
                         result = np.round(sess.run(y_,feed_dict={x: colorlist,keep_prob: 1.0}),3)
                         stationnum = sess.run(tf.argmax(result,1))
-                        childans=tf.cast(tf.equal(stationnum,slabel),tf.float32)
+                    
+                        childanses=(tf.equal(stationnum,slabel))
+                    
+                        childanses=list(sess.run((tf.cast(childanses,tf.float32))))
+                    
+                        childans=(tf.add_n(childanses))
                         correctans=correctans+tf.reduce_sum(childans)
                     
-                        print('{0} accurancy: {1}'.format(name,sess.run(
-                            tf.reduce_mean(childans))))
+                        print(' {0} accurancy: {1}'.format(name,sess.run(
+                        tf.reduce_mean(childans))))
                 
-                
-                    print('All accurancy: {0}'.format(sess.run(correctans/denominbator)))
+                    print(' All accurancy: {0}'.format(sess.run(correctans/denominbator)))
